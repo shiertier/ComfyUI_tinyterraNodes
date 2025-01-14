@@ -1,5 +1,7 @@
 from .ttNpy.tinyterraNodes import TTN_VERSIONS
 from .ttNpy import ttNserver  # Do Not Remove
+import configparser
+import folder_paths
 import subprocess
 import shutil
 import os
