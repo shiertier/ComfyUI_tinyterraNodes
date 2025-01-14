@@ -75,6 +75,16 @@ default_config = {
     }
 }
 
+# 定义选项值
+optionValues = {
+    "auto_update": ('true', 'false'),
+    "enable_embed_autocomplete": ('true', 'false'),
+    "enable_interface": ('true', 'false'),
+    "enable_fullscreen": ('true', 'false'),
+    "enable_dynamic_widgets": ('true', 'false'),
+    "enable_dev_nodes": ('true', 'false'),
+}
+
 def get_default_config():
     """返回默认配置字典。"""
     return default_config
