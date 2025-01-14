@@ -1,7 +1,5 @@
 from .ttNpy.tinyterraNodes import TTN_VERSIONS
-from .ttNpy import ttNserver # Do Not Remove
-import configparser
-import folder_paths
+from .ttNpy import ttNserver  # Do Not Remove
 import subprocess
 import shutil
 import os
@@ -11,103 +9,84 @@ cwd_path = os.path.dirname(os.path.realpath(__file__))
 js_path = os.path.join(cwd_path, "js")
 comfy_path = folder_paths.base_path
 
-config_path = os.path.join(cwd_path, "config.ini")
-
-optionValues = {
+# 定义默认配置
+default_config = {
+    "Versions": {
+        "tinyterranodes": "2.0.3",
+        "pipeloader": "1.1.2",
+        "pipeksampler": "1.0.5",
+        "pipeksampleradvanced": "1.0.5",
+        "pipeloadersdxl": "1.1.2",
+        "pipeksamplersdxl": "1.0.2",
+        "pipein": "1.1.0",
+        "pipeout": "1.1.0",
+        "pipeedit": "1.1.1",
+        "pipe2basic": "1.1.0",
+        "pipe2detailer": "1.2.0",
+        "xyplot": "1.2.0",
+        "pipeencodeconcat": "1.0.2",
+        "multilorastack": "1.1.1",
+        "multimodelmerge": "1.1.0",
+        "text": "1.0.0",
+        "textdebug": "1.0.",
+        "concat": "1.0.0",
+        "text3box_3wayconcat": "1.0.0",
+        "text7box_concat": "1.0.0",
+        "imageoutput": "1.2.0",
+        "imagerembg": "1.0.0",
+        "hiresfixscale": "1.1.0",
+        "int": "1.0.0",
+        "float": "1.0.0",
+        "seed": "1.0.0",
+        "pipeloader_v2": "2.1.0",
+        "tinyksampler": "2.3.1",
+        "tinyloader": "1.1.0",
+        "tinyconditioning": "1.0.0",
+        "pipeksampler_v2": "2.3.1",
+        "pipeksampleradvanced_v2": "2.3.0",
+        "pipeloadersdxl_v2": "2.1.0",
+        "pipeksamplersdxl_v2": "2.3.1",
+        "advanced xyplot": "1.2.0",
+        "advplot range": "1.1.0",
+        "advplot string": "1.0.0",
+        "advplot combo": "1.0.0",
+        "debuginput": "1.0.0",
+        "textcycleline": "1.0.0",
+        "advplot images": "1.0.0",
+        "textoutput": "1.0.1",
+    },
+    "Option Values": {
         "auto_update": ('true', 'false'),
         "enable_embed_autocomplete": ('true', 'false'),
         "enable_interface": ('true', 'false'),
         "enable_fullscreen": ('true', 'false'),
         "enable_dynamic_widgets": ('true', 'false'),
         "enable_dev_nodes": ('true', 'false'),
+    },
+    "ttNodes": {
+        "auto_update": False,
+        "enable_interface": True,
+        "enable_fullscreen": True,
+        "enable_embed_autocomplete": True,
+        "enable_dynamic_widgets": True,
+        "enable_dev_nodes": False,
     }
+}
 
-def get_config():
-    """Return a configparser.ConfigParser object."""
-    config = configparser.ConfigParser()
-    config.read(config_path)
-    return config
-
-def update_config():
-    #section > option > value
-    for node, version in TTN_VERSIONS.items():
-        config_write("Versions", node, version)
-    
-    for option, value in optionValues.items():
-        config_write("Option Values", option, value)
-
-    section_data = {
-        "ttNodes": {
-            "auto_update": False,
-            "enable_interface": True,
-            "enable_fullscreen": True,
-            "enable_embed_autocomplete": True,
-            "enable_dynamic_widgets": True,
-            "enable_dev_nodes": False,
-        }
-    }
-
-    for section, data in section_data.items():
-        for option, value in data.items():
-            if config_read(section, option) is None:
-                config_write(section, option, value)
-
-    # Load the configuration data into a dictionary.
-    config_data = config_load()
-
-    # Iterate through the configuration data.
-    for section, options in config_data.items():
-        if section == "Versions":
-            continue
-        for option in options:
-            # If the option is not in `optionValues` or in `section_data`, remove it.
-            if (option not in optionValues and
-                (section not in section_data or option not in section_data[section])):
-                config_remove(section, option)
-
-def config_load():
-    """Load the entire configuration into a dictionary."""
-    config = get_config()
-    return {section: dict(config.items(section)) for section in config.sections()}
-
-def config_read(section, option):
-    """Read a configuration option."""
-    config = get_config()
-    return config.get(section, option, fallback=None)
-
-def config_write(section, option, value):
-    """Write a configuration option."""
-    config = get_config()
-    if not config.has_section(section):
-        config.add_section(section)
-    config.set(section, str(option), str(value))
-
-    with open(config_path, 'w') as f:
-        config.write(f)
-
-def config_remove(section, option):
-    """Remove an option from a section."""
-    config = get_config()
-    if config.has_section(section):
-        config.remove_option(section, option)
-        with open(config_path, 'w') as f:
-            config.write(f)
+def get_default_config():
+    """返回默认配置字典。"""
+    return default_config
 
 def config_value_validator(section, option, default):
-    value = str(config_read(section, option)).lower()
+    value = str(config_data[section][option]).lower()
     if value not in optionValues[option]:
         print(f'\033[92m[{section} Config]\033[91m {option} - \'{value}\' not in {optionValues[option]}, reverting to default.\033[0m')
-        config_write(section, option, default)
         return default
     else:
         return value
 
-# Create a config file if not exists
-if not os.path.isfile(config_path):
-    with open(config_path, 'w') as f:
-        pass
-
-update_config()
+# 使用默认配置
+config_data = get_default_config()
 
 # Autoupdate if True
 if config_value_validator("ttNodes", "auto_update", 'false') == 'true':
@@ -151,7 +130,7 @@ else:
     ttNdev_DISPLAY_NAME_MAPPINGS = {}
 
 # ------- MAPPING ------- #
-from .ttNpy.tinyterraNodes import NODE_CLASS_MAPPINGS as TTN_CLASS_MAPPINGS,  NODE_DISPLAY_NAME_MAPPINGS as TTN_DISPLAY_NAME_MAPPINGS
+from .ttNpy.tinyterraNodes import NODE_CLASS_MAPPINGS as TTN_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as TTN_DISPLAY_NAME_MAPPINGS
 from .ttNpy.ttNlegacyNodes import NODE_CLASS_MAPPINGS as LEGACY_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as LEGACY_DISPLAY_NAME_MAPPINGS
 
 NODE_CLASS_MAPPINGS = {**TTN_CLASS_MAPPINGS, **LEGACY_CLASS_MAPPINGS, **ttNdev_CLASS_MAPPINGS}
